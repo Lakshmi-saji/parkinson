@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Screening History — NeuroVoice AI{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Screening <span class="gradient-text">History</span></h1>
+            <p class="page-subtitle">Your complete voice screening record — {{ predictions|length }} screening{{ 's' if
+                predictions|length != 1 }}</p>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-sm" id="newScreeningHistBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                New Screening
+            </a>
+        </div>
+
+        {% if predictions %}
+        <div class="history-table-wrap">
+            <table class="history-table" aria-label="Screening history">
+                <thead>
+                    <tr>
+                        <th scope="col">Date & Time</th>
+                        <th scope="col">Risk Level</th>
+                        <th scope="col">Confidence</th>
+                        <th scope="col">Source</th>
+                        <th scope="col">Model</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in predictions %}
+                    <tr>
+                        <td>
+                            <div class="hist-date">{{ pred.created_at.strftime('%b %d, %Y') }}</div>
+                            <div class="hist-time">{{ pred.created_at.strftime('%H:%M UTC') }}</div>
+                        </td>
+                        <td>
+                            <span class="risk-badge risk-{{ pred.risk_level.lower() }}">
+                                {{ pred.risk_level }} Risk
+                            </span>
+                        </td>
+                        <td>
+                            <div class="conf-bar-container">
+                                <div class="conf-bar-fill risk-{{ pred.risk_level.lower() }}" style="width: {{ "
+                                    %.0f"|format(pred.confidence_score * 100) }}%"></div>
+                                <span class="conf-pct">{{ "%.1f"|format(pred.confidence_score * 100) }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span
+                                class="source-badge source-{{ pred.voice_sample.source if pred.voice_sample else 'upload' }}">
+                                {% if pred.voice_sample and pred.voice_sample.source == 'record' %}🎤 Recorded
+                                {% else %}📁 Uploaded{% endif %}
+                            </span>
+                        </td>
+                        <td class="model-col">{{ pred.model_used }}</td>
+                        <td>
+                            <div class="hist-actions">
+                                <a href="{{ url_for('voice.results', prediction_id=pred.id) }}" class="btn-icon"
+                                    title="View Results" aria-label="View results for screening {{ pred.id }}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </a>
+                                {% if pred.report_path %}
+                                <a href="{{ url_for('voice.download_report', prediction_id=pred.id) }}" class="btn-icon"
+                                    title="Download PDF" aria-label="Download PDF report for screening {{ pred.id }}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                </svg>
+            </div>
+            <h2>No Screenings Yet</h2>
+            <p>You haven't completed any voice screenings. Start your first one now.</p>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary" id="startFirstScreeningBtn">
+                Start First Screening
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

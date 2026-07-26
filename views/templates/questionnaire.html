@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block title %}ParkiSense — Clinical Pre-Screening{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" id="parkisense-scope">
+    <div class="container dashboard-body">
+        <!-- ParkiSense Hero -->
+        <div class="nvox-hero" style="text-align:center; padding: 40px 0 20px;">
+            <div class="bot-avatar-large">
+                <div class="glow-ring"></div>
+                <svg width="120" height="120" viewBox="0 0 100 100" class="nvox-svg-hq">
+                    <circle cx="50" cy="50" r="45" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" />
+                    <ellipse cx="50" cy="50" rx="35" ry="30" fill="#fff" />
+                    <rect x="25" y="35" width="50" height="25" rx="12" fill="#232a3d" />
+                    <circle cx="40" cy="47" r="4" fill="#00f2fe" class="nvox-eye" />
+                    <circle cx="60" cy="47" r="4" fill="#00f2fe" class="nvox-eye" />
+                    <path d="M42 54 Q50 58 58 54" stroke="#00f2fe" stroke-width="2" fill="none" />
+                    <!-- Digital Headset -->
+                    <path d="M15 50 Q15 15 50 15 Q85 15 85 50" stroke="#333" stroke-width="5" fill="none" />
+                    <rect x="10" y="45" width="10" height="20" rx="4" fill="#333" />
+                    <rect x="80" y="45" width="10" height="20" rx="4" fill="#333" />
+                </svg>
+            </div>
+            <h1 class="gradient-text" style="font-size:2.5rem; margin-top:20px;">ParkiSense</h1>
+            <p style="opacity:0.6; font-size:1.1rem;">Clinical Pre-Screening Intake</p>
+        </div>
+
+        <div class="chat-wrapper">
+            <div id="chat-container">
+                <!-- ParkiSense interaction history -->
+            </div>
+
+            <form id="questionnaire-form" action="{{ url_for('main.questionnaire_submit') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- Hidden Clinical Fields -->
+                <input type="hidden" name="age" id="f_age">
+                <input type="hidden" name="gender" id="f_gender">
+                <input type="hidden" name="tremors" id="f_tremors">
+                <input type="hidden" name="slowness" id="f_slowness">
+                <input type="hidden" name="rigidity" id="f_rigidity">
+                <input type="hidden" name="walking" id="f_walking">
+                <input type="hidden" name="smell" id="f_smell">
+                <input type="hidden" name="handwriting" id="f_handwriting">
+                <input type="hidden" name="sleep" id="f_sleep">
+                <input type="hidden" name="family_history" id="f_history">
+                <input type="hidden" name="additional" id="f_additional">
+
+                <div id="interaction-controls">
+                    <input type="number" id="current_input_num" class="form-input" style="display:none;" placeholder="Enter your age...">
+                    <textarea id="current_input_text" class="form-input" style="display:none; resize:vertical; min-height:80px;" placeholder="Describe any other symptoms or concerns..."></textarea>
+                    <div class="choice-group" id="choice-group-2">
+                        <button type="button" class="btn btn-choice" id="btn-ans-1" style="display:none;"></button>
+                        <button type="button" class="btn btn-choice" id="btn-ans-2" style="display:none;"></button>
+                    </div>
+                    <div class="choice-group choice-group-4" id="choice-group-4" style="display:none; flex-direction:column; gap:8px;">
+                        <button type="button" class="btn btn-choice-full" id="btn-ans-3" style="display:none;"></button>
+                        <button type="button" class="btn btn-choice-full" id="btn-ans-4" style="display:none;"></button>
+                        <button type="button" class="btn btn-choice-full" id="btn-ans-5" style="display:none;"></button>
+                        <button type="button" class="btn btn-choice-full" id="btn-ans-6" style="display:none;"></button>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="btn-next" style="display:none;">Confirm Answer</button>
+                    <button type="submit" class="btn btn-primary btn-glow" id="btn-submit" style="display:none; width:100%;">Begin Voice Analysis →</button>
+                    <div style="text-align:center; margin-top:15px;">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-ghost" id="btn-skip" style="font-size:0.85rem; opacity:0.6;">Skip &amp; Record Voice</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.nvox-svg-hq { animation: nvoxFloat 4s infinite ease-in-out; }
+.nvox-eye { animation: nvoxBlink 5s infinite; transform-origin: center; }
+
+@keyframes nvoxFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+@keyframes nvoxBlink {
+    0%, 48%, 52%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0); }
+}
+
+.chat-wrapper {
+    max-width: 580px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    padding: 25px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+
+#chat-container {
+    height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+    scrollbar-width: none;
+    margin-bottom: 16px;
+}
+#chat-container::-webkit-scrollbar { display: none; }
+
+.chat-bubble {
+    padding: 12px 18px;
+    border-radius: 20px;
+    max-width: 85%;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    animation: bubbleIn 0.3s ease-out forwards;
+}
+.chat-ai {
+    background: #fff;
+    color: #1a1f2c;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.chat-user {
+    background: linear-gradient(135deg, #00f2fe, #2DCE89);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.choice-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.btn-choice {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 14px;
+    flex: 1;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+.btn-choice:hover { background: #fff; color: #1a1f2c; }
+
+.btn-choice-full {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 11px 16px;
+    border-radius: 14px;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.btn-choice-full:hover {
+    background: linear-gradient(135deg, rgba(0,242,254,0.15), rgba(45,206,137,0.15));
+    border-color: #2DCE89;
+    color: #fff;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+.form-input::placeholder { color: rgba(255,255,255,0.4); }
+
+@keyframes bubbleIn {
+    from { opacity: 0; transform: scale(0.9) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatContainer = document.getElementById('chat-container');
+    const inputNum = document.getElementById('current_input_num');
+    const inputText = document.getElementById('current_input_text');
+    const btn1 = document.getElementById('btn-ans-1');
+    const btn2 = document.getElementById('btn-ans-2');
+    const btn3 = document.getElementById('btn-ans-3');
+    const btn4 = document.getElementById('btn-ans-4');
+    const btn5 = document.getElementById('btn-ans-5');
+    const btn6 = document.getElementById('btn-ans-6');
+    const btnNext = document.getElementById('btn-next');
+    const btnSubmit = document.getElementById('btn-submit');
+    const btnSkip = document.getElementById('btn-skip');
+    const group2 = document.getElementById('choice-group-2');
+    const group4 = document.getElementById('choice-group-4');
+
+    const steps = [
+        {
+            q: "Hello, I am ParkiSense. I will guide you through a brief clinical intake to help personalize your voice analysis. To begin, could you please tell me your age?",
+            type: "number", field: "f_age"
+        },
+        {
+            q: "Thank you. What is your biological gender?",
+            type: "choice2", options: ["Male", "Female"], field: "f_gender"
+        },
+        {
+            q: "How would you best describe any involuntary shaking or tremors you experience in your hands, arms, or legs?",
+            type: "choice4",
+            options: [
+                "I do not experience any tremors",
+                "I notice mild, occasional shaking",
+                "I experience frequent tremors at rest",
+                "I have severe and constant tremors"
+            ],
+            field: "f_tremors"
+        },
+        {
+            q: "How would you describe your walking ability and balance?",
+            type: "choice4",
+            options: [
+                "I walk normally with no issues",
+                "I occasionally shuffle or drag one foot",
+                "I frequently shuffle and have balance problems",
+                "I have significant difficulty walking"
+            ],
+            field: "f_walking"
+        },
+        {
+            q: "How would you describe your speed of movement during daily activities such as dressing or eating?",
+            type: "choice4",
+            options: [
+                "My movement speed is completely normal",
+                "I feel mildly slower than I used to be",
+                "I am noticeably slower and it affects daily tasks",
+                "I am very slow and often need assistance"
+            ],
+            field: "f_slowness"
+        },
+        {
+            q: "Have you noticed any changes in your sense of smell, for example with familiar foods or scents?",
+            type: "choice4",
+            options: [
+                "No change in my sense of smell",
+                "Slightly reduced ability to smell",
+                "Significantly reduced sense of smell",
+                "I have nearly or completely lost my sense of smell"
+            ],
+            field: "f_smell"
+        },
+        {
+            q: "Has your handwriting changed in any way recently?",
+            type: "choice4",
+            options: [
+                "My handwriting has not changed",
+                "It has become slightly smaller or cramped",
+                "It is noticeably smaller and harder to write",
+                "My handwriting is very small or nearly illegible"
+            ],
+            field: "f_handwriting"
+        },
+        {
+            q: "How would you describe any stiffness or rigidity you feel in your arms, legs, or body?",
+            type: "choice4",
+            options: [
+                "I do not experience any stiffness",
+                "I feel mild occasional stiffness",
+                "I experience moderate stiffness on a daily basis",
+                "I have severe stiffness that significantly limits movement"
+            ],
+            field: "f_rigidity"
+        },
+        {
+            q: "How would you describe your sleep patterns?",
+            type: "choice4",
+            options: [
+                "I sleep normally without any issues",
+                "I have occasional difficulty sleeping",
+                "I frequently have disrupted sleep or vivid dreams",
+                "I experience severe and persistent sleep problems"
+            ],
+            field: "f_sleep"
+        },
+        {
+            q: "Is there any history of Parkinson's disease among your immediate family members?",
+            type: "choice4",
+            options: [
+                "No known family history of Parkinson's",
+                "A distant relative was affected",
+                "A parent or sibling has been diagnosed",
+                "Multiple close family members have been affected"
+            ],
+            field: "f_history"
+        },
+        {
+            q: "Finally, please describe any other symptoms, concerns, or difficulties you are experiencing that you would like to share with us. You may write as much as you like.",
+            type: "text", field: "f_additional"
+        }
+    ];
+
+    let currentStepIndex = 0;
+
+    function addBubble(text, isUser = false) {
+        const div = document.createElement('div');
+        div.className = 'chat-bubble ' + (isUser ? 'chat-user' : 'chat-ai');
+        div.textContent = text;
+        chatContainer.appendChild(div);
+        chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+    }
+
+    function hideAllInputs() {
+        inputNum.style.display = 'none';
+        inputText.style.display = 'none';
+        btn1.style.display = 'none';
+        btn2.style.display = 'none';
+        group2.style.display = 'none';
+        group4.style.display = 'none';
+        [btn3, btn4, btn5, btn6].forEach(b => b.style.display = 'none');
+        btnNext.style.display = 'none';
+        btnSubmit.style.display = 'none';
+    }
+
+    function renderStep() {
+        if (currentStepIndex >= steps.length) {
+            setTimeout(() => {
+                addBubble("Thank you for completing the intake. Your clinical profile has been recorded. Please proceed to the voice analysis when you are ready.", false);
+                hideAllInputs();
+                btnSubmit.style.display = 'block';
+                btnSkip.style.display = 'none';
+            }, 600);
+            return;
+        }
+
+        const step = steps[currentStepIndex];
+        hideAllInputs();
+
+        setTimeout(() => {
+            addBubble(step.q, false);
+            setTimeout(() => {
+                if (step.type === 'number') {
+                    inputNum.style.display = 'block';
+                    inputNum.value = '';
+                    inputNum.focus();
+                    btnNext.style.display = 'block';
+                } else if (step.type === 'choice2') {
+                    btn1.textContent = step.options[0];
+                    btn2.textContent = step.options[1];
+                    group2.style.display = 'flex';
+                    btn1.style.display = 'block';
+                    btn2.style.display = 'block';
+                } else if (step.type === 'choice4') {
+                    const btns = [btn3, btn4, btn5, btn6];
+                    step.options.forEach((opt, i) => {
+                        btns[i].textContent = opt;
+                        btns[i].style.display = 'block';
+                    });
+                    group4.style.display = 'flex';
+                } else if (step.type === 'text') {
+                    inputText.style.display = 'block';
+                    inputText.value = '';
+                    inputText.focus();
+                    btnNext.style.display = 'block';
+                }
+            }, 400);
+        }, 700);
+    }
+
+    function advance(value) {
+        const step = steps[currentStepIndex];
+        const fieldEl = document.getElementById(step.field);
+        if (fieldEl) fieldEl.value = value || 'Not specified';
+        addBubble(value || 'Not specified', true);
+        currentStepIndex++;
+        renderStep();
+    }
+
+    btnNext.addEventListener('click', () => {
+        const step = steps[currentStepIndex];
+        if (step.type === 'text') {
+            advance(inputText.value.trim() || 'No additional difficulties reported');
+        } else {
+            advance(inputNum.value);
+        }
+    });
+
+    inputNum.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); advance(inputNum.value); }
+    });
+
+    btn1.addEventListener('click', () => advance(btn1.textContent));
+    btn2.addEventListener('click', () => advance(btn2.textContent));
+    btn3.addEventListener('click', () => advance(btn3.textContent));
+    btn4.addEventListener('click', () => advance(btn4.textContent));
+    btn5.addEventListener('click', () => advance(btn5.textContent));
+    btn6.addEventListener('click', () => advance(btn6.textContent));
+
+    renderStep();
+});
+</script>
+{% endblock %}

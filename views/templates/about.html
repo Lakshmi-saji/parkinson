@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}About — NeuroVoice AI{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <div class="container">
+        <div class="page-header centered">
+            <div class="section-badge">About This Project</div>
+            <h1 class="page-title">About <span class="gradient-text">NeuroVoice AI</span></h1>
+            <p class="page-subtitle">
+                A voice-based early detection system for Parkinson's Disease built on
+                peer-reviewed vocal biomarker research.
+            </p>
+        </div>
+
+        <div class="about-grid">
+            <div class="about-card">
+                <h2>The Science Behind It</h2>
+                <p>
+                    Parkinson's Disease (PD) affects over 10 million people worldwide. Research has established
+                    that vocal biomarkers — measurable characteristics of a person's voice — change significantly
+                    in individuals with PD due to impaired motor control of the vocal cords (dysarthria).
+                </p>
+                <p>
+                    This system uses the same acoustic features studied in the landmark Oxford Parkinson's Disease
+                    Detection Dataset (Little et al., 2007), which demonstrated that voice measurements can be used
+                    to discriminate healthy individuals from those with Parkinson's with high accuracy.
+                </p>
+            </div>
+
+            <div class="about-card">
+                <h2>Technology Stack</h2>
+                <div class="tech-list">
+                    <div class="tech-item"><span class="tech-badge backend">Backend</span> Python · Flask · SQLAlchemy
+                    </div>
+                    <div class="tech-item"><span class="tech-badge ml">ML / Audio</span> Scikit-learn · Librosa · NumPy
+                    </div>
+                    <div class="tech-item"><span class="tech-badge frontend">Frontend</span> HTML5 · Vanilla CSS · Web
+                        Audio API</div>
+                    <div class="tech-item"><span class="tech-badge db">Database</span> SQLite (dev) · PostgreSQL (prod)
+                    </div>
+                    <div class="tech-item"><span class="tech-badge report">Reports</span> ReportLab PDF generation</div>
+                </div>
+            </div>
+
+            <div class="about-card about-card-full">
+                <h2>Acoustic Features Analyzed</h2>
+                <div class="features-about-grid">
+                    <div class="fab-item">
+                        <h3>Pitch Features (F0)</h3>
+                        <p>Mean, maximum, and minimum fundamental frequency of the voice. PD patients show greater pitch
+                            variability and lower mean pitch.</p>
+                    </div>
+                    <div class="fab-item">
+                        <h3>Jitter</h3>
+                        <p>Cycle-to-cycle variation in pitch period. Higher jitter values indicate instability in vocal
+                            cord vibration, a key PD marker.</p>
+                    </div>
+                    <div class="fab-item">
+                        <h3>Shimmer</h3>
+                        <p>Cycle-to-cycle variation in amplitude. Elevated shimmer reflects reduced vocal cord tension
+                            control in PD.</p>
+                    </div>
+                    <div class="fab-item">
+                        <h3>HNR / NHR</h3>
+                        <p>Harmonics-to-Noise Ratio measures the ratio of periodic (harmonic) to noise components. PD
+                            voices typically have lower HNR.</p>
+                    </div>
+                    <div class="fab-item">
+                        <h3>RPDE / DFA / PPE</h3>
+                        <p>Nonlinear dynamical complexity measures capturing subtle irregularities in vocal fold
+                            vibration patterns not captured by linear measures.</p>
+                    </div>
+                    <div class="fab-item">
+                        <h3>MFCCs (13)</h3>
+                        <p>Mel-Frequency Cepstral Coefficients represent the spectral envelope of the voice and are
+                            widely used in speech disorder analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="disclaimer-card prominent">
+            <h2>⚠️ Important Medical Disclaimer</h2>
+            <p>
+                NeuroVoice AI is a <strong>research and educational tool</strong> designed to demonstrate the
+                potential of AI in healthcare screening. It is <strong>NOT</strong> an FDA-approved medical device
+                and should <strong>NOT</strong> be used for clinical diagnosis or treatment decisions.
+            </p>
+            <p>
+                If you or someone you know is experiencing symptoms of Parkinson's Disease (tremor, rigidity,
+                bradykinesia, postural instability), please seek evaluation from a qualified neurologist immediately.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Create Account — NeuroVoice AI{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="19" stroke="url(#lg2)" stroke-width="2" />
+                    <path d="M10 22 Q15 12 20 20 Q25 28 30 18" stroke="url(#lg2)" stroke-width="2.5"
+                        stroke-linecap="round" fill="none" />
+                    <defs>
+                        <linearGradient id="lg2" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#00C6A2" />
+                            <stop offset="100%" stop-color="#4F8EF7" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+        <h1 class="auth-title">Create Your Account</h1>
+        <p class="auth-subtitle">Register to track your screening history over time</p>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label" for="name">Full Name <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <input type="text" id="name" name="name" class="form-input" placeholder="John Doe" required
+                            minlength="2" value="{{ form_data.get('name', '') }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                        <input type="email" id="reg_email" name="email" class="form-input" placeholder="you@example.com"
+                            required autocomplete="email" value="{{ form_data.get('email', '') }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="age">Age</label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <input type="number" id="age" name="age" class="form-input" placeholder="45" min="1" max="120"
+                            value="{{ form_data.get('age', '') }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="gender">Gender</label>
+                    <div class="input-wrapper select-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M16 8h4m-2-2v4M9.5 17h5" />
+                        </svg>
+                        <select id="gender" name="gender" class="form-input form-select">
+                            <option value="">Prefer not to say</option>
+                            <option value="Male" {% if form_data.get('gender')=='Male' %}selected{% endif %}>Male
+                            </option>
+                            <option value="Female" {% if form_data.get('gender')=='Female' %}selected{% endif %}>Female
+                            </option>
+                            <option value="Other" {% if form_data.get('gender')=='Other' %}selected{% endif %}>Other
+                            </option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg_password">Password <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <input type="password" id="reg_password" name="password" class="form-input"
+                            placeholder="Min. 6 characters" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility"
+                            data-target="reg_password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="strengthBar" aria-live="polite">
+                        <div class="strength-track">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <span class="strength-label" id="strengthLabel"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm Password <span
+                            class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            aria-hidden="true">
+                            <path d="M9 11l3 3L22 4" />
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </svg>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-input"
+                            placeholder="Re-enter password" required autocomplete="new-password">
+                        <svg class="match-icon" id="matchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="display:none">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full mt-md" id="registerSubmitBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <line x1="20" y1="8" x2="20" y2="14" />
+                    <line x1="23" y1="11" x2="17" y2="11" />
+                </svg>
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+        <a href="{{ url_for('auth.guest') }}" class="btn btn-ghost btn-full" id="guestRegisterBtn">Continue without
+            account</a>
+        <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}" id="goToLoginLink">Sign
+                in</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password strength meter
+    const pwInput = document.getElementById('reg_password');
+    const fill = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    const confirmInput = document.getElementById('confirm_password');
+    const matchIcon = document.getElementById('matchIcon');
+
+    pwInput.addEventListener('input', function () {
+        const val = this.value;
+        let score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+        const levels = [
+            { pct: '20%', color: '#F5365C', text: 'Very Weak' },
+            { pct: '40%', color: '#FB6340', text: 'Weak' },
+            { pct: '60%', color: '#FFD600', text: 'Fair' },
+            { pct: '80%', color: '#2DCE89', text: 'Strong' },
+            { pct: '100%', color: '#00C6A2', text: 'Very Strong' },
+        ];
+        const lv = levels[Math.min(score - 1, 4)] || { pct: '0%', color: 'transparent', text: '' };
+        fill.style.width = lv.pct;
+        fill.style.background = lv.color;
+        label.textContent = lv.text;
+        label.style.color = lv.color;
+    });
+
+    confirmInput.addEventListener('input', function () {
+        if (this.value && this.value === pwInput.value) {
+            matchIcon.style.display = 'block';
+            matchIcon.style.color = '#2DCE89';
+        } else {
+            matchIcon.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+2026-05-21 15:40:49.665977: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1 Pro
+2026-05-21 15:40:49.666058: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 32.00 GB
+2026-05-21 15:40:49.666066: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 10.67 GB
+2026-05-21 15:40:49.666082: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-05-21 15:40:49.666094: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+WARNING:absl:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+V65 Neural Brain (CNN-Deep) Loaded.
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5050
+ * Running on http://192.168.1.38:5050
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "GET /dashboard HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/css/style2.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/css/style4.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/css/style3.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:41:48] "[36mGET /static/js/recorder.js HTTP/1.1[0m" 304 -
+2026-05-21 15:42:00.496952: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[32mPOST /analyze HTTP/1.1[0m" 302 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "GET /results/171 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[36mGET /static/css/style3.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[36mGET /static/css/style2.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:00] "[36mGET /static/css/style4.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "GET /dashboard HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/js/recorder.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/css/style2.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/css/style4.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/css/style3.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/js/recorder.js HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [21/May/2026 15:42:02] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -

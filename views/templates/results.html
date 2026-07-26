@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ prediction.risk_level }} — NeuroVoice AI{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">Screening Results</span>
+        </nav>
+
+        <!-- Risk Banner -->
+        <div class="risk-banner risk-banner-{{ prediction.risk_level.lower() }}" role="region"
+            aria-label="Risk assessment result">
+            <div class="risk-banner-left">
+                <div class="risk-icon-big" aria-hidden="true">
+                    {% if prediction.risk_level == 'Healthy' %}💚
+                    {% elif prediction.risk_level == 'Low' %}✅
+                    {% elif prediction.risk_level == 'Medium' %}⚠️
+                    {% else %}❗
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="risk-label-sm">Overall Assessment</div>
+                    <div class="risk-level-display">
+                        {% if prediction.risk_level == 'Healthy' %}
+                            ✅ Healthy — No Risk Detected
+                        {% elif prediction.risk_level == 'Low' %}
+                            Low Risk
+                        {% elif prediction.risk_level == 'Medium' %}
+                            Medium Risk
+                        {% else %}
+                            High Risk
+                        {% endif %}
+                    </div>
+                    <div class="risk-date">Analyzed on {{ prediction.created_at.strftime('%B %d, %Y at %H:%M') }}</div>
+                </div>
+            </div>
+            <div class="risk-banner-right">
+                <div class="confidence-circle" aria-label="Parkinson Score">
+                    <svg viewBox="0 0 100 100" class="conf-svg" aria-hidden="true">
+                        <circle cx="50" cy="50" r="42" class="conf-bg" />
+                        <circle cx="50" cy="50" r="42" class="conf-fill-parkinson"
+                            style="stroke-dasharray: {{ (prediction.parkinson_probability * 264)|int }} 264; stroke: {{'#2DCE89' if prediction.risk_level == 'Healthy' else ('#FFD600' if prediction.risk_level == 'Low' else ('#FB6340' if prediction.risk_level == 'Medium' else '#F5365C'))}};" />
+                    </svg>
+                    <div class="conf-text">
+                        <div class="conf-number">{{ "%.1f"|format(prediction.parkinson_probability * 100) }}%</div>
+                        <div class="conf-label">Neural Score</div>
+                    </div>
+                </div>
+                <a href="/download-report/{{ prediction.id }}" class="btn btn-download"
+                    id="downloadReportBtn" style="background:#fff; color:#000;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Get PDF Report
+                </a>
+            </div>
+        </div>
+
+        <!-- Medical Disclaimer Banner -->
+        <div class="results-disclaimer" role="alert">
+            <span aria-hidden="true">⚠️</span>
+            <strong>Medical Disclaimer:</strong> This is a decision-support screening tool, not a medical diagnosis.
+            Please consult a qualified neurologist or healthcare professional for a clinical evaluation.
+        </div>
+
+        <!-- Results Grid -->
+        <div class="results-grid">
+            <!-- Key Metrics -->
+            <div class="results-card">
+                <h2 class="results-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                    Key Vocal Metrics
+                </h2>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Avg. Pitch (F0)</div>
+                        <div class="metric-value">{{ "%.2f"|format(features.get('mdvp_fo', 0)) }} <small>Hz</small>
+                        </div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar"
+                                style="width: {{ [features.get('mdvp_fo', 0) / 300 * 100, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Jitter (%)</div>
+                        <div class="metric-value">{{ "%.4f"|format(features.get('mdvp_jitter_pct', 0)) }}</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar {{ 'metric-bar-warn' if features.get('mdvp_jitter_pct', 0) > 0.006 else '' }}"
+                                style="width: {{ [features.get('mdvp_jitter_pct', 0) * 2000, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Shimmer</div>
+                        <div class="metric-value">{{ "%.4f"|format(features.get('mdvp_shimmer', 0)) }}</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar {{ 'metric-bar-warn' if features.get('mdvp_shimmer', 0) > 0.03 else '' }}"
+                                style="width: {{ [features.get('mdvp_shimmer', 0) * 400, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">HNR (dB)</div>
+                        <div class="metric-value">{{ "%.2f"|format(features.get('hnr', 0)) }} <small>dB</small></div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar {{ 'metric-bar-good' if features.get('hnr', 0) > 22 else 'metric-bar-warn' }}"
+                                style="width: {{ [features.get('hnr', 0) / 40 * 100, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">NHR</div>
+                        <div class="metric-value">{{ "%.4f"|format(features.get('nhr', 0)) }}</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar {{ 'metric-bar-warn' if features.get('nhr', 0) > 0.02 else '' }}"
+                                style="width: {{ [features.get('nhr', 0) * 1000, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">PPE</div>
+                        <div class="metric-value">{{ "%.4f"|format(features.get('ppe', 0)) }}</div>
+                        <div class="metric-bar-wrap">
+                            <div class="metric-bar" style="width: {{ [features.get('ppe', 0) * 250, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Interpretation -->
+            <div class="results-card">
+                <h2 class="results-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Interpretation
+                </h2>
+                <div class="interpretation-content">
+                    {% if prediction.risk_level == 'Healthy' %}
+                    <div class="interp-block interp-low" style="border-left-color:#2DCE89; background:rgba(45,206,137,0.07);">
+                        <h3>💚 Healthy — No Parkinson's Indicators Found</h3>
+                        <p>Great news! Your vocal biomarkers are completely within the healthy range. The AI model found <strong>no significant patterns</strong> associated with Parkinson's Disease in this voice sample.</p>
+                        <ul>
+                            <li>Your voice is clear, stable, and within normal parameters</li>
+                            <li>Keep maintaining a healthy lifestyle and voice hygiene</li>
+                            <li>Optional: Re-screen annually as a routine check</li>
+                        </ul>
+                    </div>
+                    {% elif prediction.risk_level == 'Low' %}
+                    <div class="interp-block interp-low">
+                        <h3>✅ Low Risk — Minor Vocal Variation Detected</h3>
+                        <p>Your voice is mostly within normal range with only very minor acoustic variations. This is <strong>not a cause for immediate concern</strong> and may be due to recording conditions or natural variation.</p>
+                        <ul>
+                            <li>No urgent action required at this time</li>
+                            <li>Monitor for any physical symptoms (tremors, stiffness)</li>
+                            <li>Re-screen every 6 months as a precaution</li>
+                            <li>Consult a doctor if you notice other neurological changes</li>
+                        </ul>
+                    </div>
+                    {% elif prediction.risk_level == 'Medium' %}
+                    <div class="interp-block interp-medium">
+                        <h3>⚠️ Medium Risk — Some Vocal Irregularities Detected</h3>
+                        <p>Your voice sample shows some acoustic patterns that may warrant further attention. This does
+                            not confirm Parkinson's Disease, but professional evaluation is recommended.</p>
+                        <ul>
+                            <li>Schedule a consultation with a neurologist</li>
+                            <li>Consider a formal clinical vocal assessment</li>
+                            <li>Note any other potential symptoms (tremor, rigidity, slowness)</li>
+                            <li>Re-screen in 3 months</li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="interp-block interp-high">
+                        <h3>❗ High Risk — Significant Vocal Biomarkers Detected</h3>
+                        <p>Your voice sample exhibits multiple acoustic patterns significantly associated with
+                            Parkinson's Disease biomarkers. <strong>This requires immediate professional
+                                consultation.</strong></p>
+                        <ul>
+                            <li><strong>Consult a neurologist as soon as possible</strong></li>
+                            <li>Bring this report to your medical appointment</li>
+                            <li>Undergo a comprehensive neurological evaluation (UPDRS)</li>
+                            <li>Do not rely on this tool alone for any decisions</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if prediction.risk_level != 'Healthy' %}
+            <!-- Hospital Finder -->
+            <div class="results-card results-card-full">
+                <h2 class="results-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Recommended Clinical Follow-up
+                </h2>
+                <div class="hospital-finder">
+                    <p style="margin-bottom:15px; color:rgba(255,255,255,0.8);">Enter your city or region to find nearby hospitals equipped for neurological evaluations.</p>
+                    <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                        <input type="text" id="cityInput" placeholder="e.g. London, Mumbai, New York" style="flex:1; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05); color:white; font-size:1rem;">
+                        <button type="button" onclick="findHospitals()" class="btn btn-primary" style="padding:10px 25px;">Search</button>
+                    </div>
+                    <div id="hospitalList" class="hospital-list"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- MFCC Visualization -->
+            <div class="results-card results-card-full">
+                <h2 class="results-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                    </svg>
+                    MFCC Feature Profile (13 Coefficients)
+                </h2>
+                <div class="mfcc-chart" role="img" aria-label="MFCC coefficient chart">
+                    {% for i in range(1, 14) %}
+                    {% set val = features.get('mfcc_' ~ i, 0) %}
+                    {% set abs_val = val|abs %}
+                    {% set max_val = 300 %}
+                    <div class="mfcc-bar-container">
+                        <div class="mfcc-label">M{{ i }}</div>
+                        <div class="mfcc-bar-wrap">
+                            <div class="mfcc-bar-pos"
+                                style="height: {{ [val / max_val * 100, 0]|max|int }}px; max-height: 80px;"></div>
+                            <div class="mfcc-zero-line"></div>
+                            <div class="mfcc-bar-neg"
+                                style="height: {{ [(-val) / max_val * 100, 0]|max|int }}px; max-height: 80px;"></div>
+                        </div>
+                        <div class="mfcc-val">{{ "%.1f"|format(val) }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- All Features Table -->
+            <div class="results-card results-card-full">
+                <h2 class="results-card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    Complete Feature Report
+                </h2>
+                <div class="features-table-wrap">
+                    <table class="features-table" aria-label="Complete acoustic features">
+                        <thead>
+                            <tr>
+                                <th scope="col">Feature</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set feat_info = [
+                            ('MDVP:Fo (Hz)', 'mdvp_fo', 'Pitch', '85–255 Hz'),
+                            ('MDVP:Fhi (Hz)', 'mdvp_fhi', 'Pitch', '100–600 Hz'),
+                            ('MDVP:Flo (Hz)', 'mdvp_flo', 'Pitch', '65–240 Hz'),
+                            ('MDVP:Jitter (%)', 'mdvp_jitter_pct', 'Jitter', '< 0.006%'), ('MDVP:Jitter
+                                (Abs)', 'mdvp_jitter_abs' , 'Jitter' , '< 0.00004 s' ), ('MDVP:RAP', 'mdvp_rap'
+                                , 'Jitter' , '< 0.003' ), ('MDVP:PPQ', 'mdvp_ppq' , 'Jitter' , '< 0.003' ),
+                                ('Jitter:DDP', 'jitter_ddp' , 'Jitter' , '< 0.009' ), ('MDVP:Shimmer', 'mdvp_shimmer'
+                                , 'Shimmer' , '< 0.030' ), ('MDVP:Shimmer (dB)', 'mdvp_shimmer_db' , 'Shimmer'
+                                , '< 0.280 dB' ), ('Shimmer:APQ3', 'shimmer_apq3' , 'Shimmer' , '< 0.016' ),
+                                ('Shimmer:APQ5', 'shimmer_apq5' , 'Shimmer' , '< 0.018' ), ('MDVP:APQ', 'mdvp_apq'
+                                , 'Shimmer' , '< 0.024' ), ('Shimmer:DDA', 'shimmer_dda' , 'Shimmer' , '< 0.047' ),
+                                ('NHR', 'nhr' , 'Noise Ratio' , '< 0.025' ), ('HNR', 'hnr' , 'Noise Ratio' , '> 20 dB'
+                                ), ('RPDE', 'rpde' , 'Nonlinear' , '0.25–0.70' ), ('DFA', 'dfa' , 'Nonlinear'
+                                , '0.62–0.83' ), ('Spread1', 'spread1' , 'Nonlinear' , '–7.5 to –4.0' ),
+                                ('Spread2', 'spread2' , 'Nonlinear' , '0.01–0.45' ), ('D2', 'd2' , 'Nonlinear'
+                                , '1.5–4.0' ), ('PPE', 'ppe' , 'Nonlinear' , '0.03–0.45' ), ] %} {% for name, key,
+                                category, ref in feat_info %} <tr>
+                                <td class="feat-name">{{ name }}</td>
+                                <td class="feat-value">
+                                    <code>{{ "%.5f"|format(features.get(key, 0)) }}</code>
+                                </td>
+                                <td><span class="feat-cat feat-cat-{{ category.lower().replace(' ', '-') }}">{{ category
+                                        }}</span></td>
+                                <td class="feat-ref">{{ ref }}</td>
+                                </tr>
+                                {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="results-actions">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline" id="newScreeningBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 5 5 12 12 19" />
+                </svg>
+                New Screening
+            </a>
+            <a href="{{ url_for('voice.download_report', prediction_id=prediction.id) }}" class="btn btn-primary"
+                id="downloadReportBtn2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download PDF Report
+            </a>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-ghost" id="saveResultsBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                </svg>
+                Save Results (Register)
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Map Modal -->
+<div id="mapModal" class="map-modal" style="display:none;">
+    <div class="map-modal-content">
+        <span class="close-map" onclick="closeMap()">&times;</span>
+        <h3 style="margin-top:0; color:#fff;">Hospital Location</h3>
+        <div id="hospitalMap" style="height:300px; width:100%; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1);"></div>
+        <a id="directionsBtn" href="#" target="_blank" class="btn btn-primary" style="display:block; text-align:center;">Open in Maps for Directions</a>
+    </div>
+</div>
+
+<style>
+.hospital-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+.hospital-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.hospital-card:hover {
+    background: rgba(45,206,137,0.1);
+    border-color: #2DCE89;
+    transform: translateY(-2px);
+}
+.hospital-card h4 {
+    margin: 0 0 5px 0;
+    color: #2DCE89;
+    font-size: 1rem;
+}
+.hospital-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+}
+.map-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.map-modal-content {
+    background: #1a1f2c;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.close-map {
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    line-height: 1;
+}
+.close-map:hover { color: #fff; }
+</style>
+
+<script>
+async function findHospitals() {
+    const city = document.getElementById("cityInput").value;
+    if (!city) return;
+    const list = document.getElementById("hospitalList");
+    list.innerHTML = "<p style='color:rgba(255,255,255,0.6); margin-top:10px;'>Searching secure network for hospitals in " + city + "...</p>";
+    
+    try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
+        const geoData = await geoRes.json();
+        if (geoData.length === 0) {
+            list.innerHTML = "<p style='color:#FB6340;'>Region not found. Please try a different city name.</p>";
+            return;
+        }
+        
+        let areaQuery = "";
+        let filterQuery = "";
+        
+        // Use exact city boundary if available (relation or way), otherwise use a bounding box
+        if (geoData[0].osm_type === 'relation') {
+            let areaId = 3600000000 + parseInt(geoData[0].osm_id);
+            areaQuery = `area(${areaId})->.searchArea;`;
+            filterQuery = `(area.searchArea)`;
+        } else if (geoData[0].osm_type === 'way') {
+            let areaId = 2400000000 + parseInt(geoData[0].osm_id);
+            areaQuery = `area(${areaId})->.searchArea;`;
+            filterQuery = `(area.searchArea)`;
+        } else {
+            let bbox = geoData[0].boundingbox;
+            let opBbox = `${bbox[0]},${bbox[2]},${bbox[1]},${bbox[3]}`;
+            filterQuery = `(${opBbox})`;
+        }
+        
+        // Find all hospitals, expressly ignoring known veterinary tags if they exist
+        const query = `[out:json];
+${areaQuery}
+(
+  node["amenity"="hospital"]["veterinary"!="yes"]["animal"!="yes"]${filterQuery};
+  way["amenity"="hospital"]["veterinary"!="yes"]["animal"!="yes"]${filterQuery};
+);
+out center;`;
+        
+        const overpassRes = await fetch(`https://overpass-api.de/api/interpreter`, {
+            method: 'POST',
+            body: query
+        });
+        const opData = await overpassRes.json();
+        
+        // STRICT Javascript Filtering: Keep only Reputed/Neurological Hospitals
+        let hospitals = opData.elements.filter(e => {
+            if (!e.tags || !e.tags.name) return false;
+            let name = e.tags.name.toLowerCase();
+            let spec = (e.tags["healthcare:speciality"] || "").toLowerCase();
+            
+            // Exclude non-relevant facilities
+            if (name.includes('eye') || spec.includes('eye') || 
+                name.includes('dental') || spec.includes('dental') || name.includes('maternity') ||
+                name.includes('veterinary') || name.includes('animal') || name.includes('pet')) {
+                return false;
+            }
+            
+            // 1. Explicitly has neurology speciality or name
+            if (spec.includes('neuro') || name.includes('neuro')) return true;
+            
+            // 2. Or is a major multi-specialty/reputed hospital (indicated by having emergency services, a website, or phone)
+            if (e.tags.emergency === 'yes' || e.tags.website || e.tags.phone) {
+                if (name.includes('general') || name.includes('medical college') || name.includes('institute') || name.includes('specialty') || name.includes('hospital')) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        
+        // Sort by "reputation" (has website/phone/emergency comes first)
+        hospitals.sort((a, b) => {
+            let scoreA = (a.tags.website ? 2 : 0) + (a.tags.emergency === 'yes' ? 1 : 0) + (a.tags.phone ? 1 : 0);
+            let scoreB = (b.tags.website ? 2 : 0) + (b.tags.emergency === 'yes' ? 1 : 0) + (b.tags.phone ? 1 : 0);
+            return scoreB - scoreA;
+        });
+        
+        // Only return the top 5 reputed hospitals
+        hospitals = hospitals.slice(0, 5);
+        
+        if (hospitals.length === 0) {
+            list.innerHTML = "<p>No reputed neurological hospitals found in this specific area.</p>";
+            return;
+        }
+        
+        let html = "";
+        hospitals.forEach(h => {
+            const hLat = h.lat || h.center.lat;
+            const hLon = h.lon || h.center.lon;
+            const name = h.tags.name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const street = h.tags["addr:street"] || 'General / Neurology Services';
+            html += `<div class="hospital-card" onclick="showMap(${hLat}, ${hLon}, '${name}')">
+                        <h4>${h.tags.name}</h4>
+                        <p><small>${street}</small></p>
+                     </div>`;
+        });
+        list.innerHTML = html;
+        
+    } catch (err) {
+        list.innerHTML = "<p style='color:#F5365C;'>Error loading hospital data. Please try again.</p>";
+    }
+}
+
+let map = null;
+let currentMarker = null;
+
+function showMap(lat, lon, name) {
+    document.getElementById('mapModal').style.display = 'flex';
+    document.getElementById('directionsBtn').href = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+    
+    if (!map) {
+        map = L.map('hospitalMap').setView([lat, lon], 14);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    } else {
+        map.setView([lat, lon], 14);
+    }
+    
+    if (currentMarker) map.removeLayer(currentMarker);
+    currentMarker = L.marker([lat, lon]).addTo(map).bindPopup("<b>" + name + "</b>").openPopup();
+    
+    // Invalidate size to fix Leaflet rendering inside display:none modals
+    setTimeout(() => { map.invalidateSize(); }, 150);
+}
+
+function closeMap() {
+    document.getElementById('mapModal').style.display = 'none';
+}
+</script>
+{% endblock %}

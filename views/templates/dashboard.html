@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — NeuroVoice AI{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="dash-header-content">
+                <div>
+                    <h1 class="dash-title">
+                        {% if current_user.is_authenticated %}
+                        Welcome back, <span class="gradient-text">{{ current_user.name.split()[0] }}</span>
+                        {% else %}
+                        Voice Screening <span class="gradient-text">Dashboard</span>
+                        {% endif %}
+                    </h1>
+                    <p class="dash-subtitle">
+                        {% if current_user.is_authenticated %}
+                        {{ total_screenings }} screening{{ 's' if total_screenings != 1 }} completed
+                        {% if last_risk %} · Last risk: <span class="risk-badge risk-{{ last_risk.lower() }}">{{
+                            last_risk }}</span>{% endif %}
+                        {% else %}
+                        Record or upload a voice sample to get your Parkinson's risk assessment
+                        {% endif %}
+                    </p>
+                </div>
+                {% if current_user.is_authenticated %}
+                <div class="dash-stats">
+                    <div class="dash-stat">
+                        <div class="dash-stat-num">{{ total_screenings }}</div>
+                        <div class="dash-stat-label">Screenings</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container dashboard-body">
+        <div class="dashboard-grid">
+            <!-- Upload/Record Panel -->
+            <div class="dash-card dash-card-main">
+                <div class="dash-card-header">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="23" />
+                        </svg>
+                        Voice Analysis
+                    </h2>
+                    <p>Record your voice or upload an audio file for Parkinson's risk screening</p>
+                </div>
+
+                <!-- Tab Switcher -->
+                <div class="tab-switch" role="tablist" aria-label="Audio input method">
+                    <button class="tab-btn active" id="recordTab" role="tab" aria-selected="true"
+                        aria-controls="recordPanel" data-tab="record">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        </svg>
+                        Record Voice
+                    </button>
+                    <button class="tab-btn" id="uploadTab" role="tab" aria-selected="false" aria-controls="uploadPanel"
+                        data-tab="upload">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <polyline points="16 16 12 12 8 16" />
+                            <line x1="12" y1="12" x2="12" y2="21" />
+                            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                        </svg>
+                        Upload File
+                    </button>
+                </div>
+
+                <!-- Record Panel -->
+                <div id="recordPanel" class="tab-panel active" role="tabpanel" aria-labelledby="recordTab">
+                    <div class="record-area" id="recordArea">
+                        <div class="record-visual" id="recordVisual" aria-hidden="true">
+                            <div class="record-ring" id="recordRing"></div>
+                            <button class="record-btn" id="recordBtn" aria-label="Start recording" type="button">
+                                <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                    <line x1="12" y1="19" x2="12" y2="23" />
+                                    <line x1="8" y1="23" x2="16" y2="23" />
+                                </svg>
+                                <svg class="stop-svg" style="display:none" viewBox="0 0 24 24" fill="currentColor">
+                                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="record-status" id="recordStatus">
+                            <p class="record-hint" id="recordHint">Click to start recording</p>
+                            <div class="record-timer" id="recordTimer" style="display:none" aria-live="polite">
+                                <span class="timer-dot" aria-hidden="true"></span>
+                                <span id="timerDisplay">0:00</span>
+                            </div>
+                        </div>
+                        <div class="live-waveform" id="liveWaveform" aria-hidden="true">
+                            {% for i in range(30) %}
+                            <div class="lw-bar" data-i="{{ i }}"></div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Audio playback after recording -->
+                        <div id="playbackArea" style="display:none">
+                            <audio id="recordedAudio" controls class="audio-player"
+                                aria-label="Recorded audio playback"></audio>
+                            <div class="playback-actions">
+                                <button class="btn btn-outline btn-sm" id="reRecordBtn" type="button">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        aria-hidden="true">
+                                        <polyline points="1 4 1 10 7 10" />
+                                        <path d="M3.51 15a9 9 0 1 0 .49-3.8" />
+                                    </svg>
+                                    Re-record
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="record-tips">
+                        <div class="tip-icon" aria-hidden="true">💡</div>
+                        <div>
+                            <strong>Tips for best results:</strong>
+                            <ul class="tip-list">
+                                <li>Say a sustained "Ahhhh" for 5-10 seconds</li>
+                                <li>Keep a consistent volume and pitch</li>
+                                <li>Record in a quiet environment</li>
+                                <li>Hold the microphone 6-12 inches away</li>
+                                <li>It is recommended not to use the inbuilt laptop microphone</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form id="recordForm" method="POST" action="{{ url_for('voice.analyze') }}"
+                        enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="source" value="record">
+                        <input type="file" name="audio_data" id="recordFileInput" style="display:none" accept="audio/*">
+                        <button type="submit" class="btn btn-primary btn-full" id="analyzeRecordBtn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                aria-hidden="true">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                            </svg>
+                            Analyze Voice Recording
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Upload Panel -->
+                <div id="uploadPanel" class="tab-panel" role="tabpanel" aria-labelledby="uploadTab"
+                    style="display:none">
+                    <form id="uploadForm" method="POST" action="{{ url_for('voice.analyze') }}"
+                        enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="source" value="upload">
+
+                        <label class="drop-zone" id="dropZone" for="audioFileInput" aria-label="Upload audio file">
+                            <div class="drop-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <polyline points="16 16 12 12 8 16" />
+                                    <line x1="12" y1="12" x2="12" y2="21" />
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                                </svg>
+                            </div>
+                            <p class="drop-title">Drop your audio file here</p>
+                            <p class="drop-subtitle">or click to browse</p>
+                            <p class="drop-formats">Supported: WAV, MP3, OGG, M4A, FLAC (max 50MB)</p>
+                            <input type="file" id="audioFileInput" name="audio_file" accept=".wav,.mp3,.ogg,.m4a,.flac"
+                                style="display:none" aria-label="Choose audio file">
+                        </label>
+
+                        <div id="filePreview" class="file-preview" style="display:none">
+                            <div class="file-meta">
+                                <svg class="file-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" aria-hidden="true">
+                                    <path d="M9 18V5l12-2v13" />
+                                    <circle cx="6" cy="18" r="3" />
+                                    <circle cx="18" cy="16" r="3" />
+                                </svg>
+                                <div>
+                                    <div class="file-name" id="fileName">—</div>
+                                    <div class="file-size" id="fileSize">—</div>
+                                </div>
+                            </div>
+                            <audio id="uploadedAudio" controls class="audio-player"
+                                aria-label="Uploaded audio preview"></audio>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full mt-md" id="analyzeUploadBtn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                aria-hidden="true">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                            </svg>
+                            Analyze Uploaded File
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="dash-sidebar">
+                {% if current_user.is_authenticated and recent_predictions %}
+                <!-- Recent Screenings -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-card-title">Recent Screenings</h3>
+                    <div class="recent-list">
+                        {% for pred in recent_predictions %}
+                        <a href="{{ url_for('voice.results', prediction_id=pred.id) }}" class="recent-item">
+                            <div class="recent-risk risk-{{ pred.risk_level.lower() }}">{{ pred.risk_level[0] }}</div>
+                            <div class="recent-info">
+                                <div class="recent-label">{{ pred.risk_level }} Risk</div>
+                                <div class="recent-date">{{ pred.created_at.strftime('%b %d, %Y') }}</div>
+                            </div>
+                            <div class="recent-conf">{{ "%.0f"|format(pred.confidence_score * 100) }}%</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('main.history') }}" class="sidebar-link">View all history →</a>
+                </div>
+                {% else %}
+                <!-- Guest Info -->
+                <div class="sidebar-card info-card">
+                    <div class="info-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                    </div>
+                    <h3>Track Your History</h3>
+                    <p>Create a free account to save your screening results and monitor changes over time.</p>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm"
+                        id="sidebarRegisterBtn">Create Free Account</a>
+                </div>
+                {% endif %}
+
+                <!-- What We Analyze -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-card-title">What We Analyze</h3>
+                    <div class="feature-list">
+                        <div class="fl-item">
+                            <span class="fl-dot teal"></span>
+                            <div>
+                                <strong>Pitch (F0)</strong>
+                                <span>Fundamental frequency and variability</span>
+                            </div>
+                        </div>
+                        <div class="fl-item">
+                            <span class="fl-dot blue"></span>
+                            <div>
+                                <strong>Jitter</strong>
+                                <span>Pitch period perturbation</span>
+                            </div>
+                        </div>
+                        <div class="fl-item">
+                            <span class="fl-dot purple"></span>
+                            <div>
+                                <strong>Shimmer</strong>
+                                <span>Amplitude perturbation</span>
+                            </div>
+                        </div>
+                        <div class="fl-item">
+                            <span class="fl-dot orange"></span>
+                            <div>
+                                <strong>HNR / NHR</strong>
+                                <span>Harmonics-to-Noise Ratio</span>
+                            </div>
+                        </div>
+                        <div class="fl-item">
+                            <span class="fl-dot pink"></span>
+                            <div>
+                                <strong>MFCC (13)</strong>
+                                <span>Mel-frequency cepstral coefficients</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="sidebar-card disclaimer-mini">
+                    <div class="disclaimer-mini-icon" aria-hidden="true">⚠️</div>
+                    <p><strong>Disclaimer:</strong> This tool is a decision-support aid only. It does not provide a
+                        medical diagnosis. Always consult a healthcare professional.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Overlay -->
+<div id="processingOverlay" class="processing-overlay" style="display:none" role="status" aria-live="assertive">
+    <div class="processing-card">
+        <div class="processing-spinner" aria-hidden="true"></div>
+        <h3>Analyzing Voice Sample</h3>
+        <p id="processingStep">Preprocessing audio...</p>
+        <div class="processing-steps">
+            <div class="ps-step active" id="ps1">
+                <div class="ps-dot"></div><span>Preprocessing</span>
+            </div>
+            <div class="ps-step" id="ps2">
+                <div class="ps-dot"></div><span>Extracting Features</span>
+            </div>
+            <div class="ps-step" id="ps3">
+                <div class="ps-dot"></div><span>ML Inference</span>
+            </div>
+            <div class="ps-step" id="ps4">
+                <div class="ps-dot"></div><span>Generating Report</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+{% endblock %}

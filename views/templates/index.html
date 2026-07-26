@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}NeuroVoice AI — Voice-Based Parkinson's Screening{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" aria-label="Hero section">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            AI-Powered Early Detection
+        </div>
+        <h1 class="hero-title">
+            Detect Parkinson's Risk<br>
+            <span class="gradient-text">Through Your Voice</span>
+        </h1>
+        <p class="hero-subtitle">
+            Advanced voice pattern analysis using machine learning to identify early
+            biomarkers associated with Parkinson's Disease. Non-invasive. Fast. Accessible.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('auth.register') }}" id="heroRegisterBtn" class="btn btn-primary btn-lg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Start Free Screening
+            </a>
+            <a href="{{ url_for('auth.guest') }}" id="heroGuestBtn" class="btn btn-ghost btn-lg">
+                Continue as Guest
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                </svg>
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-num">95%+</div>
+                <div class="stat-label">Detection Accuracy</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-num">35+</div>
+                <div class="stat-label">Vocal Biomarkers</div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-num">&lt;60s</div>
+                <div class="stat-label">Analysis Time</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+        <div class="waveform-container">
+            <div class="waveform-ring ring-1"></div>
+            <div class="waveform-ring ring-2"></div>
+            <div class="waveform-ring ring-3"></div>
+            <div class="mic-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+            </div>
+            <div class="waveform-bars">
+                {% for i in range(20) %}
+                <div class="bar" style="animation-delay: {{ i * 0.08 }}s"></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="section" id="how-it-works" aria-labelledby="howTitle">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Simple Process</div>
+            <h2 class="section-title" id="howTitle">How It Works</h2>
+            <p class="section-subtitle">Three steps to get your voice-based Parkinson's risk assessment</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">01</div>
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                    </svg>
+                </div>
+                <h3>Record or Upload</h3>
+                <p>Record your voice directly in the browser or upload a WAV/MP3 file. Sustain a vowel sound ('Ahhh')
+                    for best results.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">02</div>
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                </div>
+                <h3>AI Analysis</h3>
+                <p>Our system extracts 35+ acoustic biomarkers including pitch, jitter, shimmer, HNR, and MFCCs using
+                    advanced signal processing.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">03</div>
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                </div>
+                <h3>Get Your Report</h3>
+                <p>Receive an instant risk assessment (Low / Medium / High) with a downloadable PDF report detailing
+                    your vocal biomarker analysis.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section section-alt" aria-labelledby="featuresTitle">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Technology</div>
+            <h2 class="section-title" id="featuresTitle">Powered by Science</h2>
+            <p class="section-subtitle">Built on peer-reviewed research in vocal biomarker detection</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon teal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v4l3 3" />
+                    </svg>
+                </div>
+                <h3>Real-time Processing</h3>
+                <p>Audio is preprocessed, denoised, and normalized within seconds for accurate feature extraction.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="9" y1="21" x2="9" y2="9" />
+                    </svg>
+                </div>
+                <h3>35+ Acoustic Features</h3>
+                <p>Extracts Pitch (F0), Jitter, Shimmer, HNR, RPDE, DFA, PPE, and 13 MFCC coefficients.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    </svg>
+                </div>
+                <h3>Random Forest ML</h3>
+                <p>Ensemble machine learning model trained on vocal biomarker datasets with high sensitivity and
+                    specificity.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon orange">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                </div>
+                <h3>Privacy First</h3>
+                <p>Audio files are processed locally and never shared. Your health data stays private and secure.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Medical Disclaimer Section -->
+<section class="disclaimer-section" aria-label="Medical disclaimer">
+    <div class="container">
+        <div class="disclaimer-card">
+            <div class="disclaimer-icon" aria-hidden="true">⚠️</div>
+            <div class="disclaimer-content">
+                <h3>Important Medical Disclaimer</h3>
+                <p>
+                    NeuroVoice AI is a <strong>decision-support screening tool</strong>, not a diagnostic device.
+                    Results are indicative only and should <strong>never</strong> replace consultation with a qualified
+                    neurologist or healthcare professional. If you are experiencing symptoms of Parkinson's Disease,
+                    please seek immediate medical attention.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section" aria-labelledby="ctaTitle">
+    <div class="container">
+        <div class="cta-content">
+            <h2 id="ctaTitle">Ready to Check Your Voice Health?</h2>
+            <p>Early detection can make a significant difference. Start your free screening today.</p>
+            <div class="cta-actions">
+                <a href="{{ url_for('auth.register') }}" id="ctaRegisterBtn" class="btn btn-primary btn-lg">Create Free
+                    Account</a>
+                <a href="{{ url_for('auth.guest') }}" id="ctaGuestBtn" class="btn btn-outline btn-lg">Try as Guest</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
